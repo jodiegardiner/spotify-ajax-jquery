@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Spotify Demo jQuery Ajax</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+	<style>
+		
+		.container{
+			border: 3px black solid;
+			border-radius: 15px;
+						
+			/*background-color: lightgrey;*/
+		}
+		
+		
+
+		.search-element{
+			margin-bottom: 50px;
+		}
+
+		.gallery{
+			float:left;
+			padding: 10px;
+			margin-right: 10px;
+
+		}
+
+		.gallery img{
+			margin-right: 5px;
+			margin-bottom: 5px;
+		}
+
+	</style>
+
+</head>
+<body>
+
+
+	<div class="container">
+		
+
+		<h1 class="">Spotify.Previewer</h1>
+	<div class="row">
+
+		<div class="col-md-4 col-md-offset-3">
+            <form action="" class="search-form">
+                <div class="form-group has-feedback search-element">
+            		<label for="search" class="sr-only">Search</label>
+            		<input type="text" class="form-control" name="search" id="artist-query" placeholder="search">
+              		<span class="glyphicon glyphicon-search form-control-feedback" id=""></span>
+            	</div>
+            </form>
+        </div>
+	</div>
+		
+		<form action="#" id="select-artist">
+			<fieldset>
+				<div>
+					<label for="artists">Artist Matches</label>
+					<select id="artists"></select>
+				</div>
+			</fieldset>
+		</form>
+		<hr>
+
+<!-- ===============================================================
+This element could be removed once the image links worked.  Still here for now to demonstrate the tracklist table functionality
+=============================================================== -->
+		<form action="#" id="select-album">
+			<fieldset>
+				
+				<div>
+					<label for="albums">Select an album</label>
+					<select name="" id="albums"></select>
+				</div>
+			</fieldset>
+		</form>
+
+
+		<div class="gallery"></div>
+
+		<hr>
+		<div>
+			<table class="table table-striped" id="trackTable">
+            <thead>
+              <tr>
+                <th>track list</th>
+              </tr>
+            </thead>
+            <tbody>
+                           
+            </tbody>
+          </table>
+		</div>
+		
+		
+	</div>
+
+<!-- 
+
+	..........End Content......
+
+	-->
+	<script src="https://code.jquery.com/jquery-2.0.3.min.js"></script>
+	<script>
+
+		$("#artist-query").on('click', function(event) {
+
+			event.preventDefault();
+			var nameArtist = $("#artist-query").val();
+			var urlArtistSpotify = "https://api.spotify.com/v1/search?type=artist&query=" + nameArtist;
+
+			$.ajax({
+				url: urlArtistSpotify,
+				dataType: 'json',
+			})
+			.success(function( dataArtists ) {
+				var contentSelect = "<option disabled selected>Select artist</option>";
+
+				$.each( dataArtists.artists.items, function(i, elem) {
+					contentSelect += '<option value="' + elem.id + '">' + elem.name + '</option>';
+				});
+				$("#select-artist select").html( contentSelect );
+
+			})
+
+		});
+
+
+		$("#select-artist select").on('change', function(e) {
+			e.preventDefault();
+			var idArtist = $(this).val();
+			var urlAlbums = "https://api.spotify.com/v1/artists/" + idArtist + "/albums"
+
+			$.ajax({
+				url: urlAlbums,
+				dataType: 'json'
+			})
+			.success(function( dataAlbums ) {
+
+				var contentSelect = "";
+
+				$.each( dataAlbums.items, function(i, elem) {
+					contentSelect += '<option value="' + elem.id + '">' + elem.name + '</option>';
+				});
+				$("#select-album select").html( contentSelect );
+
+				console.log(dataAlbums);
+			})
+
+		});
+
+		$("#select-artist select").on('change', function(e) {
+			e.preventDefault();
+			var idArtist = $(this).val();
+			var urlAlbums = "https://api.spotify.com/v1/artists/" + idArtist + "/albums"
+
+			$.ajax({
+				url: urlAlbums,
+				dataType: 'json'
+			})
+			.success(function( dataAlbums ) {
+
+				var contentSelect = "";
+
+				$.each( dataAlbums.items, function(i, elem) {
+					contentSelect += '<img value="' + elem.id + '" src="'+elem.images[2].url+'" title="'+elem.name+'">';
+				});
+				$(".gallery").html( contentSelect );
+
+				console.log(dataAlbums);
+			})
+
+		});
+
+
+		$("#select-album select").on('change', function(e) {
+			e.preventDefault();
+			var idAlbum = $(this).val();
+			var urlTracks = "https://api.spotify.com/v1/albums/" + idAlbum + "/tracks";
+			//https://api.spotify.com/v1/albums//tracks
+
+			$.ajax({
+				url: urlTracks,
+				dataType: 'json'
+			})
+			.success(function( dataTracks ) {
+
+				var contentSelect = "";
+
+				$.each( dataTracks.items, function(i, elem) {
+					contentSelect += '<tr><td value="' + elem.id + '"><a href="'+elem.preview_url+'"> '+ elem.name + '</td></tr>';
+				});
+				$("#trackTable tbody").html( contentSelect );
+				// console.log(dataTracks);
+		});
+
+		// $(".gallery img").on('click', function(e) {
+		// 	e.preventDefault();
+		// 	var idAlbum = $(this).val();
+		// 	var urlTracks = "https://api.spotify.com/v1/albums/" + idAlbum + "/tracks";
+		// 	//https://api.spotify.com/v1/albums//tracks
+
+			
+		// 	$.ajax({
+		// 		url: urlTracks,
+		// 		dataType: 'json'
+		// 	})
+		// 	.success(function( dataTracks ) {
+
+		// 		var contentSelect = "";
+
+		// 		$.each( dataTracks.items, function(i, elem) {
+		// 			contentSelect += '<tr><td value="' + elem.id + '"><a href="'+elem.preview_url+'"> '+ elem.name + '</td></tr>';
+		// 		});
+		// 		$("#trackTable tbody").html( contentSelect );
+
+		// });
+
+	});
+
+
+
+
+	</script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+</html>
